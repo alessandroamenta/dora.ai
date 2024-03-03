@@ -11,6 +11,3 @@ myenv/
 
 # Environment variables
 .env
-
-# Audio files
-*.mp3

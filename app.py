@@ -1,7 +1,11 @@
+import logging
 from openai import OpenAI
 from pydub import AudioSegment
 import os
 from dotenv import load_dotenv
+from elevenlabs import generate, play, Voice, VoiceSettings
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Initialize final_audio as a silent segment of zero duration
 final_audio = AudioSegment.silent(duration=0)
@@ -9,8 +13,14 @@ final_audio = AudioSegment.silent(duration=0)
 # Load environment variables from .env file
 load_dotenv()
 
+#ElevenLabs setup
+ELEVEN_API_KEY = os.getenv('ELEVENLABS_API_KEY')
+
 # OpenAI API Setup
 client = OpenAI(api_key=os.getenv('OPENAI_API_KEY')) 
+
+# Logging the start of script generation
+logging.info("Starting meditation script generation...")
 
 # Define the prompt for meditation text generation, aiming for a specific length
 prompt = (
@@ -21,6 +31,7 @@ prompt = (
     "The script’s length, closely adhering to the 4000 character guideline, and the strategic, gentle introduction of '---PAUSE---' markers are both crucial. They work together to create a meditation experience that is both impactful and seamlessly executed from start to finish, providing natural intervals for reflection or breathing without sudden interruptions. "
     "Please ensure the language used throughout the script is simple, clear, and approachable, making the meditation accessible and engaging for everyone."
 )
+
 
 # Generate the meditation script
 response = client.chat.completions.create(
@@ -35,39 +46,42 @@ response = client.chat.completions.create(
 # Extract the generated script
 meditation_script = response.choices[0].message.content
 
-# Print the entire generated meditation script
-print("Generated Meditation Script:")
-print(meditation_script)
-print("\n")
+# Logging the generated meditation script
+logging.info("Meditation script generated successfully.")
 
 # Split the script into segments at each pause marker
 segments = meditation_script.split('---PAUSE---')
 
-# Print each segment individually
-for i, segment in enumerate(segments):
-    print(f"Segment {i+1}:")
-    print(segment.strip())
-    print("\n")
+# Logging the start of audio processing
+logging.info("Starting audio processing for segments...")
 
 # Define a one-minute pause
 one_minute_silence = AudioSegment.silent(duration=60000)  # 60,000 milliseconds
 
 # Generate and combine segments with pauses
 for i, segment in enumerate(segments):
-    # Generate the audio using OpenAI's text-to-speech
-    response = client.audio.speech.create(
-        model="tts-1",
-        voice="onyx", 
-        input=segment,
-        speed=0.9,
+    # Logging the processing of each segment with TTS
+    logging.info(f"Processing segment {i+1} with TTS...")
+
+    # Generate the audio using ElevenLabs' text-to-speech
+    audio_response = generate(
+        api_key=ELEVEN_API_KEY,
+        text=segment,
+        voice=Voice(
+            voice_id='RrkF2QZOPA1PyW4EamJj',
+            settings=VoiceSettings(speaking_rate=0.8, stability=0.71, similarity_boost=0.5, style=0.0, use_speaker_boost=True)
+        ),
+        model="eleven_monolingual_v1",
+        output_format="mp3_44100_128"  # Specify MP3 as the output format
     )
 
-    # Save and load each segment
+    # Save the audio data to a file, using MP3 format directly
     temp_audio_file = f"segment_{i}.mp3"
     with open(temp_audio_file, "wb") as f:
-        f.write(response.content) 
+        f.write(audio_response)
 
-    segment_audio = AudioSegment.from_file(temp_audio_file)
+    # Load the segment audio and append to the final audio
+    segment_audio = AudioSegment.from_file(temp_audio_file, format="mp3")
     final_audio += segment_audio
 
     # Add pause after each segment except the last one
@@ -77,7 +91,11 @@ for i, segment in enumerate(segments):
     # Clean up the temporary file
     os.remove(temp_audio_file)
 
-# Export the final audio file
-final_audio.export("audio.mp3", format="mp3")
+# Logging the completion of audio processing
+logging.info("Audio processing completed successfully.")
 
-print("Audio with pauses created successfully!")
+# Export the final audio file
+final_audio.export("meditation_sesh_audio.mp3", format="mp3")
+
+# Logging the successful creation of the final audio file
+logging.info("Meditation audio with pauses created and exported successfully.")
