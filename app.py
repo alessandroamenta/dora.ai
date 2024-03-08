@@ -24,6 +24,45 @@ ai_provider = input("Choose your AI provider for script generation (type 'openai
 openai_client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 anthropic_client = anthropic.Anthropic(api_key=os.getenv('ANTHROPIC_API_KEY')) 
 
+# Define meditation duration and guidance level options
+duration_options = {"2-5min": 4, "5-10min": 7, "10+min": 10}
+guidance_levels = {"low", "medium", "high"}
+
+# Heuristics based on duration and guidance level
+heuristics = {
+    (4, "low"): (1000, 1, 180),
+    (4, "medium"): (2000, 2, 60),
+    (4, "high"): (2000, 4, 30),
+    (7, "low"): (2000, 2, 165),
+    (7, "medium"): (3500, 4, 60),
+    (7, "high"): (4000, 6, 40),
+    (10, "low"): (2500, 3, 180),
+    (10, "medium"): (4000, 5, 85),
+    (10, "high"): (5000, 6, 50),
+}
+
+# Prompt the user to choose meditation duration
+print("Choose a meditation duration:")
+for option in duration_options.keys():
+    print(option)
+duration_choice = input("Enter the duration choice: ")
+
+# Prompt the user to choose guidance level
+print("Choose a guidance level (low/medium/high):")
+guidance_choice = input("Enter the guidance level: ").lower()
+
+# Get the average duration in minutes and apply heuristics
+if duration_choice in duration_options and guidance_choice in guidance_levels:
+    average_duration = duration_options[duration_choice]
+    char_count, pause_count, pause_length = heuristics[(average_duration, guidance_choice)]
+    section_count = pause_count + 1
+else:
+    logging.error("Invalid choice. Please select from the available options.")
+    exit(1)
+
+pause_length_ms = pause_length * 1000
+
+
 # Ask the user which TTS provider they want to use
 tts_provider = input("Choose your TTS provider (type 'openai' or 'elevenlabs', default is 'openai'): ").lower() or "openai"
 
@@ -66,13 +105,24 @@ logging.info("Starting meditation script generation...")
 
 # Define the prompt for meditation text generation, aiming for a specific length
 prompt = (
-    "Create a script for a 5-minute cohesive meditation session, with a strict focus on mindfulness and breath control. The script must meticulously adhere to approximately 4000 characters, aligning precisely with the session's duration. "
-    "Crucially, it is imperative to include '---PAUSE---' markers at carefully considered transition points, ensuring a seamless flow into periods of silent reflection or focused breathing exercises. "
-    "Prior to each '---PAUSE---' marker, the script should naturally and gently guide the listener toward the pause, facilitating a smooth transition without any abruptness. For instance, use phrases such as 'Let's now gently turn our attention to our breath, allowing ourselves to fully experience the rhythm of each inhale and exhale,' or 'At this moment, let's simply be with our breath, feeling the calmness with each breath cycle.' "
-    "These guiding phrases are essential, serving as soft introductions to the '---PAUSE---' markers and are vital for the meditation's integrity, ensuring participants are thoughtfully led into each pause. "
-    "The script’s length, closely adhering to the 4000 character guideline, and the strategic, gentle introduction of '---PAUSE---' markers are both crucial. They work together to create a meditation experience that is both impactful and seamlessly executed from start to finish, providing natural intervals for reflection or breathing without sudden interruptions. "
-    "Please ensure the language used throughout the script is simple, clear, and approachable, making the meditation accessible and engaging for everyone."
+    f"Your task is to create a script for a {average_duration} minutes guided meditation session focusing on mindfulness and breath control. "
+    f"The meditation should have {section_count} sections and {pause_count} pauses total. Please follow these specific guidelines: "
+    f"1. The script should be {char_count} characters long to align with the {average_duration} minutes duration of the session. "
+    f"2. Include a total of {pause_count} '---PAUSE---' markers at carefully considered transition points to create periods of silent reflection or focused breathing exercises. "
+    f"These pauses are crucial for the meditation's structure and flow. There should be a total of {pause_count} '---PAUSE---' markers. One for each pause. "
+    f"3. Before each '---PAUSE---' marker, gently guide the listener into the pause using phrases that encourage a smooth transition. "
+    f"For example: "
+    f"- 'Let's now gently turn our attention to our breath, allowing ourselves to fully experience the rhythm of each inhale and exhale.' "
+    f"- 'At this moment, let's simply be with our breath, feeling the calmness with each breath cycle.' "
+    f"These guiding phrases should serve as soft introductions to the '---PAUSE---' markers, ensuring participants are thoughtfully led into each pause without abruptness. "
+    f"4. Use simple, clear, and approachable language throughout the script to make the meditation accessible, engaging and relaxing for everyone. "
+    f"5. The output should only contain the meditation script, without any additional commentary. "
+    f"The script should provide '{guidance_choice}' level guidance, adjust the depth of instructions to guide the listener accordingly."
+    f"Remember, the script's strict adherence to the {char_count} character count, it should be {section_count} sections total, and the strategic placement of {pause_count} '---PAUSE---' markers with gentle introductory phrases are essential for creating an impactful and seamless meditation experience."
 )
+
+# Print the constructed prompt to verify it
+print(prompt)
 
 if ai_provider == "openai":
     client = OpenAI(api_key=os.getenv('OPENAI_API_KEY')) 
@@ -80,10 +130,10 @@ if ai_provider == "openai":
     response = client.chat.completions.create(
         model="gpt-4-turbo-preview",
         messages=[
-            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "system", "content": "You are an expert meditation guide, focused on creating scripts with precision, strictly adhering to specified character counts, and integrating the exact number of '---PAUSE---' markers as instructed."},
             {"role": "user", "content": prompt},
         ],
-        temperature=0.7,
+        temperature=0.5,
     )
     # Extract the generated script
     meditation_script = response.choices[0].message.content
@@ -95,8 +145,9 @@ elif ai_provider == "anthropic":
     # Generate the meditation script with Anthropic
     response = client.messages.create(
         model="claude-3-opus-20240229",
-        max_tokens=4000,  # You might need to adjust this for the script length
-        temperature=0,
+        max_tokens=4000,
+        system="You are an expert meditation guide, focused on creating scripts with precision, strictly adhering to specified character counts, and integrating the exact number of '---PAUSE---' markers as instructed.",
+        temperature=0.5,
         messages=[
             {
                 "role": "user",
@@ -124,7 +175,7 @@ segments = meditation_script.split('---PAUSE---')
 logging.info("Starting audio processing for segments...")
 
 # Define a one-minute pause
-one_minute_silence = AudioSegment.silent(duration=60000)  # 60,000 milliseconds
+silence = AudioSegment.silent(duration=pause_length_ms)  # 60,000 milliseconds
 
 # Generate and combine segments with pauses based on TTS provider
 for i, segment in enumerate(segments):
@@ -137,7 +188,7 @@ for i, segment in enumerate(segments):
             voice=selected_voice,
             input=segment,
             response_format="mp3",
-            speed=0.9  # You can adjust this speed parameter as needed
+            speed=0.94  # You can adjust this speed parameter as needed
         )
         # Define the path for temporary audio file
         temp_audio_file_path = f"./segment_{i}.mp3"
@@ -170,7 +221,7 @@ for i, segment in enumerate(segments):
 
     # Add a pause after each segment except the last one
     if i < len(segments) - 1:
-        final_audio += one_minute_silence
+        final_audio += silence
 
     # Clean up the temporary file
     os.remove(temp_audio_file_path)
