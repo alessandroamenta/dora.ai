@@ -30,7 +30,7 @@ guidance_levels = {"low", "medium", "high"}
 
 # Heuristics based on duration and guidance level
 heuristics = {
-    (4, "low"): (1000, 1, 180),
+    (4, "low"): (1000, 2, 90),
     (4, "medium"): (2000, 2, 60),
     (4, "high"): (2000, 4, 30),
     (7, "low"): (2000, 2, 165),
@@ -117,7 +117,8 @@ prompt = (
     f"These guiding phrases should serve as soft introductions to the '---PAUSE---' markers, ensuring participants are thoughtfully led into each pause without abruptness. "
     f"4. Use simple, clear, and approachable language throughout the script to make the meditation accessible, engaging and relaxing for everyone. "
     f"5. The output should only contain the meditation script, without any additional commentary. "
-    f"The script should provide '{guidance_choice}' level guidance, adjust the depth of instructions to guide the listener accordingly."
+    f"6.The script should provide '{guidance_choice}' level guidance, adjust the depth of instructions to guide the listener accordingly."
+    f"7.The final section will gently conclude the session, guiding towards reawakening and reconnection with the surroundings. This closing section should include instructions for slowly opening the eyes, feeling the body, and becoming aware of the sounds and sensations in the environment, signaling the end of the meditation."
     f"Remember, the script's strict adherence to the {char_count} character count, it should be {section_count} sections total, and the strategic placement of {pause_count} '---PAUSE---' markers with gentle introductory phrases are essential for creating an impactful and seamless meditation experience."
 )
 
