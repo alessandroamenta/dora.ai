@@ -5,7 +5,8 @@ from pydub import AudioSegment
 from pydub.generators import Sine
 from openai import OpenAI
 import anthropic
-from elevenlabs import generate, Voice, VoiceSettings
+from elevenlabs.client import ElevenLabs
+from elevenlabs import Voice, VoiceSettings, play
 import os
 import tempfile
 import uuid
@@ -157,15 +158,17 @@ async def generate_audio(meditation_script: str, tts_provider: str, voice: str, 
                 )
                 response.stream_to_file(temp_audio_file_path)
             elif tts_provider == "elevenlabs":
-                audio_response = generate(
-                    api_key=os.getenv('ELEVENLABS_API_KEY'),
+                client = ElevenLabs(api_key=elevenlabs_api_key)
+                voice_obj = Voice(voice_id=voice)
+                audio_generator = client.generate(
                     text=segment,
-                    voice=Voice(voice_id=voice),
+                    voice=voice_obj,
                     model="eleven_monolingual_v1",
                     output_format="mp3_44100_128"
                 )
+                audio_data = b"".join(audio_generator)
                 with open(temp_audio_file_path, "wb") as f:
-                    f.write(audio_response)
+                    f.write(audio_data)
             else:
                 raise HTTPException(status_code=400, detail="Invalid TTS provider")
 
