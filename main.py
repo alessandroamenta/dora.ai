@@ -11,11 +11,13 @@ import tempfile
 import uuid
 from fastapi.responses import StreamingResponse
 import io
+from dotenv import load_dotenv
 
 app = FastAPI()
+load_dotenv()
 
-anthropic.api_key = os.environ["ANTHROPIC_API_KEY"]
-elevenlabs_api_key = os.environ["ELEVENLABS_API_KEY"]
+anthropic.api_key = os.getenv("ANTHROPIC_API_KEY")
+elevenlabs_api_key = os.getenv("ELEVENLABS_API_KEY")
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
