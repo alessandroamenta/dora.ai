@@ -1,5 +1,5 @@
 import logging
-from fastapi import FastAPI, HTTPException, BackgroundTasks
+from fastapi import FastAPI, HTTPException, BackgroundTasks, Header
 from pydantic import BaseModel
 from pydub import AudioSegment
 from pydub.generators import Sine
@@ -34,7 +34,9 @@ audio_data = None
 audio_generation_failed = False
 
 @app.post("/generate")
-async def generate_meditation(request: MeditationRequest, background_tasks: BackgroundTasks):
+async def generate_meditation(request: MeditationRequest, background_tasks: BackgroundTasks, x_secret_token: str = Header(None)):
+    if x_secret_token != os.getenv("SECRET_TOKEN"):
+        raise HTTPException(status_code=401, detail="Invalid secret token")
     global audio_generation_failed
     audio_generation_failed = False
     logging.info("Received request to generate meditation")
@@ -106,7 +108,8 @@ async def generate_meditation(request: MeditationRequest, background_tasks: Back
             )
             meditation_script = response.choices[0].message.content
         elif ai_provider == "anthropic":
-            response = client.messages.create(
+            anthropic_client = anthropic.Anthropic(api_key=os.getenv('ANTHROPIC_API_KEY')) 
+            response = anthropic_client.messages.create(
                 model="claude-3-haiku-20240307",
                 system="You are an expert meditation guide.",
                 max_tokens=4000,
@@ -123,6 +126,7 @@ async def generate_meditation(request: MeditationRequest, background_tasks: Back
                     }
                 ]
             )
+            meditation_script = response.content[0].text
         else:
             raise HTTPException(status_code=400, detail="Invalid AI provider")
 
