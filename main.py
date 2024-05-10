@@ -37,6 +37,8 @@ audio_generation_failed = False
 async def generate_meditation(request: MeditationRequest, background_tasks: BackgroundTasks, x_secret_token: str = Header(None)):
     if x_secret_token != os.getenv("SECRET_TOKEN"):
         raise HTTPException(status_code=401, detail="Invalid secret token")
+    else:
+        logging.info("Secret token is correct")
     global audio_generation_failed
     audio_generation_failed = False
     logging.info("Received request to generate meditation")
