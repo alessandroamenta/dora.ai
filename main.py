@@ -72,22 +72,22 @@ async def generate_meditation(request: MeditationRequest, background_tasks: Back
     prompt = f"""
     Your task is to create a script for a {average_duration} minutes guided meditation session focusing on {meditation_focus}.
     The meditation should have {section_count} sections and {pause_count} pauses total. Please follow these specific guidelines:
-    1. Use ellipses (...) and commas strategically throughout the script to create natural pauses and a slower pace, with a particular emphasis on the beginning and end of the meditation. It is crucial to add a significant number of ellipses and commas, especially when starting the meditation script, to establish a slower and more relaxed pace. Additionally, when providing instructions related to breathing or other focus-specific techniques, use at least twice as many ellipses to allow ample time for the listener to follow along. For example:
+    1. VERY IMPORTANT: The output should ONLY contain the meditation script, without any additional commentary whatsoever, meditation script only!!!!!!
+    2. Use ellipses (...) and commas strategically throughout the script to create natural pauses and a slower pace, with a particular emphasis on the beginning and end of the meditation. It is crucial to add a significant number of ellipses and commas, especially when starting the meditation script, to establish a slower and more relaxed pace. Additionally, when providing instructions related to breathing or other focus-specific techniques, use at least twice as many ellipses to allow ample time for the listener to follow along. For example:
         'Take a deep breath in..............................................and slowly exhale.......................................'
         'As you settle into a comfortable position.............................., allow your body to relax............................., letting go of any tension or stress............................................'
         'Without trying to change it......................, simply observe......................... how your chest or belly rises........................ and falls.......................... with each breath.............................. Feel the air entering through your nostrils......................., cool and refreshing........................, and then warming as it exits.................................... Let's fully immerse in this sensation of breathing for a moment........................................................'
         Intelligently determine the appropriate number of ellipses to add based on the specific scenario and instructions being given, ensuring a consistently slow and relaxed pace throughout the entire meditation script, with extra emphasis on the beginning, end, and focus-specific instructions.
-    2. The script should be {char_count} characters long to align with the {average_duration} minutes duration of the session.
-    3. Include a total of {pause_count} '---PAUSE---' markers at carefully considered transition points to create periods of silent reflection or focused breathing exercises.
+    3. The script should be {char_count} characters long to align with the {average_duration} minutes duration of the session.
+    4. Include a total of {pause_count} '---PAUSE---' markers at carefully considered transition points to create periods of silent reflection or focused breathing exercises.
         These pauses are crucial for the meditation's structure and flow. There should be a total of {pause_count} '---PAUSE---' markers. One for each pause.
-    4. Before each '---PAUSE---' marker, gently guide the listener into the pause using phrases that encourage a smooth transition.
+    5. Before each '---PAUSE---' marker, gently guide the listener into the pause using phrases that encourage a smooth transition.
         For example:
         - 'Let's now gently turn our attention to our breath, allowing ourselves to fully experience the rhythm of each inhale and exhale.'
         - 'At this moment, let's simply be with our breath, feeling the calmness with each breath cycle.'
         - 'Now, let's take a moment to extend this feeling of warmth and compassion to ourselves and others...'
         - 'As we rest in this space of loving-kindness, allow yourself to be enveloped by a sense of peace and connection...'
         These guiding phrases should serve as soft introductions to the '---PAUSE---' markers, ensuring participants are thoughtfully led into each pause without abruptness, while maintaining relevance to the chosen focus.
-    5. VERY IMPORTANT: The output should ONLY contain the meditation script, without any additional commentary whatsoever, meditation script only!!!!!!
     6. Use simple, clear, and approachable language throughout the script to make the meditation accessible, engaging and relaxing for everyone.
     7. The script should provide '{guidance_level}' level guidance, adjust the depth of instructions to guide the listener accordingly.
     8. The final section will gently conclude the session, guiding towards reawakening and reconnection with the surroundings. This closing section should include instructions for slowly opening the eyes, feeling the body, and becoming aware of the sounds and sensations in the environment, signaling the end of the meditation, while tying back to the main theme of the selected focus.
