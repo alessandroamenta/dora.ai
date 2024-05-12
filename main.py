@@ -60,7 +60,7 @@ async def generate_meditation(request: MeditationRequest, background_tasks: Back
         "7high": [4000, 6, 40],
         "10low": [2500, 3, 180],
         "10medium": [4000, 5, 85],
-        "10high": [5000, 6, 50],
+        "10high": [7000, 7, 50],
     }
 
     average_duration = duration_options[duration]
