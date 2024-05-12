@@ -87,7 +87,7 @@ async def generate_meditation(request: MeditationRequest, background_tasks: Back
         - 'Now, let's take a moment to extend this feeling of warmth and compassion to ourselves and others...'
         - 'As we rest in this space of loving-kindness, allow yourself to be enveloped by a sense of peace and connection...'
         These guiding phrases should serve as soft introductions to the '---PAUSE---' markers, ensuring participants are thoughtfully led into each pause without abruptness, while maintaining relevance to the chosen focus.
-    5. IMPORTANT: The output should only contain the meditation script, without any additional commentary whatsoever. The output script should contain only the meditation content, and nothing else!!
+    5. VERY IMPORTANT: The output should ONLY contain the meditation script, without any additional commentary whatsoever, meditation script only!!!!!!
     6. Use simple, clear, and approachable language throughout the script to make the meditation accessible, engaging and relaxing for everyone.
     7. The script should provide '{guidance_level}' level guidance, adjust the depth of instructions to guide the listener accordingly.
     8. The final section will gently conclude the session, guiding towards reawakening and reconnection with the surroundings. This closing section should include instructions for slowly opening the eyes, feeling the body, and becoming aware of the sounds and sensations in the environment, signaling the end of the meditation, while tying back to the main theme of the selected focus.
