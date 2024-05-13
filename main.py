@@ -205,7 +205,11 @@ async def generate_audio(meditation_script: str, tts_provider: str, voice: str, 
             audio_data = file.read()
         
         # Calculate the duration of the audio in seconds
-        audio_duration = combined_audio.duration_seconds
+        audio_duration_seconds = combined_audio.duration_seconds
+
+        # Convert seconds to minutes and seconds format (MM:SS)
+        minutes, seconds = divmod(int(audio_duration_seconds), 60)
+        audio_duration = f"{minutes:02d}:{seconds:02d}"
 
         for audio_file in audio_files:
             os.unlink(audio_file)
