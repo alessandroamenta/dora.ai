@@ -144,7 +144,7 @@ async def generate_meditation(request: MeditationRequest, background_tasks: Back
         raise HTTPException(status_code=500, detail=str(e))
 
 async def generate_audio(meditation_script: str, tts_provider: str, voice: str, pause_length_ms: int):
-    global audio_data, audio_generation_failed
+    global audio_data, audio_generation_failed, audio_duration
     try:
         logging.info("Generating audio segments")
         segments = meditation_script.split("---PAUSE---")
@@ -203,6 +203,9 @@ async def generate_audio(meditation_script: str, tts_provider: str, voice: str, 
 
         with open(output_file.name, "rb") as file:
             audio_data = file.read()
+        
+        # Calculate the duration of the audio in seconds
+        audio_duration = combined_audio.duration_seconds
 
         for audio_file in audio_files:
             os.unlink(audio_file)
@@ -210,6 +213,7 @@ async def generate_audio(meditation_script: str, tts_provider: str, voice: str, 
         os.unlink(output_file.name)
 
         logging.info("Audio generation completed successfully")
+        return audio_duration
 
     except Exception as e:
         logging.error(f"Error generating audio: {str(e)}")
@@ -218,12 +222,13 @@ async def generate_audio(meditation_script: str, tts_provider: str, voice: str, 
 
 @app.get("/audio")
 async def get_audio():
+    global audio_duration
     if audio_generation_failed:
         logging.warning("Audio generation failed")
         return {"message": "Audio generation failed"}
     elif audio_data:
         logging.info("Returning generated audio")
-        return StreamingResponse(io.BytesIO(audio_data), media_type="audio/mpeg")
+        return StreamingResponse(io.BytesIO(audio_data), media_type="audio/mpeg", headers={"X-Audio-Duration": str(audio_duration)})
     else:
         logging.info("Audio not ready yet")
         return {"message": "Audio not ready yet"}
