@@ -100,7 +100,7 @@ async def generate_meditation(request: MeditationRequest, background_tasks: Back
         if ai_provider == "openai":
             client = OpenAI(api_key=os.getenv('OPENAI_API_KEY')) 
             response = client.chat.completions.create(
-                model="gpt-4-turbo-preview",
+                model="gpt-4o",
                 messages=[
                     {"role": "system", "content": "You are an expert meditation guide."},
                     {"role": "user", "content": prompt}
